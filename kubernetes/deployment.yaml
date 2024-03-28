@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kamikaze
+  namespace: kamikaze
+spec:
+  selector:
+    matchLabels:
+      app: kamikaze
+  template:
+    metadata:
+      labels:
+        app: kamikaze
+    spec:
+      containers:
+        - name: ingestion_db
+          image: postgres:alpine
+          envFrom:
+            - configMapRef:
+                name: kamikaze
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5432
+
+        - name: inference
+          envFrom:
+            - configMapRef:
+                name: kamikaze
+          image: asd
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - mountPath: /etc/postgres/data
+              name: postgres_data
+      volumes:
+        - name: postgres_data
+          persistentVolumeClaim:
+            claimName: kamikaze-db-pvc

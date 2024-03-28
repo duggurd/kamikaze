@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: kamikaze
+  name: kamikaze-db-pvc
+spec:
+  resources:
+    requests:
+      storage: "1Gi"
+  volumeMode: Filesystem

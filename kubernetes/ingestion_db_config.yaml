@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kamikaze
+  namespace: kamikaze
+data:
+  POSTGRES_PASSWORD: "123"
+  POSTGRES_USER: "ingestion"
+  POSTGRES_DATABASE: "ingestion_db"

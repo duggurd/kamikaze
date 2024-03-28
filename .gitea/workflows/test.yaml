@@ -1,7 +1,6 @@
 name: Gitea Action test
 run-name: ${{ gitea.actor }} is testing out actions
 on:
-  - push
   - workflow_dispatch
 jobs:
   Exploration:

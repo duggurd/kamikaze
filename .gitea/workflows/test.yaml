@@ -1,0 +1,11 @@
+name: Gitea Action test
+run-name: ${{ gitea.actor }} is testing out actions
+on:
+  - push
+  - workflow_dispatch
+jobs:
+  Exploration:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "echo hello world! 1"
+      - run: "echo hell world! 2"

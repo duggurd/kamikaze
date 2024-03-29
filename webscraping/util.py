@@ -12,7 +12,9 @@ def connect_db():
         user=os.environ["POSTGRES_USER"],
         password=os.environ["POSTGRES_PASSWORD"],
         host="172.30.240.1",
-        port="5432"
+        port="5432",
     )
+
+    conn.autocommit = True
 
     return conn

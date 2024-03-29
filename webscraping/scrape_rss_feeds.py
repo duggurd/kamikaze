@@ -11,13 +11,13 @@ def parse_feed(rss_feed, url):
             "rss_url": "",
             "content_title": "",
             "content_url": "",
-            "published": "",
+            "published_ts": "",
             "author": "",
             "raw": "",
         }
         e["rss_url"] = url
         e["content_title"] = entry["title"]
-        e["published"] = entry["published"]
+        e["published_ts"] = entry["published"]
         if entry.get("author") is not None:
             e["author"] = entry["author"]
         e["content_url"] = entry["link"]
@@ -65,14 +65,14 @@ def scrape_feed(rss_url: str, conn):
             content_url,
             rss_url,
             content_title,
-            published,
+            published_ts,
             author,
             raw
         ) values (
             %(content_url)s,
             %(rss_url)s,
             %(content_title)s,
-            %(published)s,
+            %(published_ts)s,
             %(author)s,
             %(raw)s
         )
@@ -93,9 +93,15 @@ def scrape_feed(rss_url: str, conn):
     
     if status["etag"] is not None or status["modified_ts"] is not None:
         cur.execute("""
+            INSERT INTO rss_status (etag, modified_ts, rss_url) values(%s, %s, %s)
+            ON CONFLICT (rss_url) DO NOTHING;
+        """, (status["etag"], status["modified_ts"], rss_url))
+
+        cur.execute("""
             UPDATE rss_status SET etag = %s, modified_ts = %s
             WHERE rss_url = %s;
         """, (status["etag"], status["modified_ts"], rss_url,))
+    conn.commit()
 
 
 def scrape_feeds(conn):

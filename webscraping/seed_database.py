@@ -2,6 +2,10 @@ import dotenv
 import psycopg2
 import os
 from util import connect_db
+import requests
+
+# from airflow.decorators import dag, task
+from datetime import datetime
 
 
 def recreate_db(conn, database:str):
@@ -70,7 +74,7 @@ def seed_rss_status(conn):
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS rss_status (
-            rss_url varchar, 
+            rss_url varchar UNIQUE, 
             etag varchar, 
             modified_ts timestamp,
             FOREIGN KEY (rss_url) REFERENCES rss_urls (rss_url)
@@ -84,7 +88,7 @@ def seed_rss_feed(conn):
     print("Creating rss_feed table")
     cur = conn.cursor()
 
-    cur.execute("DROP TABLE IF EXISTS rss_feed;")
+    cur.execute("DROP TABLE IF EXISTS rss_feed CASCADE;")
     conn.commit()
 
     cur.execute("""
@@ -92,7 +96,7 @@ def seed_rss_feed(conn):
             content_url varchar PRIMARY KEY,
             rss_url varchar,
             content_title varchar,
-            published timestamp,
+            published_ts timestamp,
             author varchar,
             raw text,
                
@@ -120,29 +124,94 @@ def seed_transformed_feed(conn):
     conn.commit()
     print("Created transformed_rss_feed")
 
-# def seeed_subreddit(conn):
-#     cur = conn.cursor()
-#     cur.execite("DROP TABLE IF EXISTS subreddits;")
-#     conn.commit()
+def seed_sentiment(conn):
+    print("creating sentiment table")
+    cur = conn.cursor()
 
-#     cur.execute(("""
-#         CREATE TABLE IF NOT EXISTS subreddits (
-#             reddit_id varchar PRIMARY KEY,
-#             url varchar,
-#             name varchar,
-#         )
+    cur.execute("DROP TABLE IF EXISTS sentiment;")
 
-# """))
+    conn.commit()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sentiment (
+            content_url varchar UNIQUE,
+            positive numeric,
+            neutral numeric,
+            negative numeric,
+            published_ts timestamp,
+            FOREIGN KEY (content_url) REFERENCES rss_feed (content_url)
+        );
+    """)
+
+    conn.commit()
+
+    print("created sentiment table")
+
+
+def seed_tickers(conn):
+    cur = conn.cursor()
+    cur.execute("DROP TABLE IF EXISTS tickers;")
+    conn.commit()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS tickers (
+            id int PRIMARY KEY,
+            cik_str int,
+            ticker varchar,
+            title varchar
+        );
+    """)
+
+    data = requests.get("https://www.sec.gov/files/company_tickers.json", headers={"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0"}).json()
+
+
+    res = []
+    for key, value in data.items():
+        value["id"] = int(key)
+        
+        res.append(value)
+
+    cur.executemany("""
+        INSERT INTO tickers (
+            id,
+            cik_str,
+            ticker,
+            title
+        ) values (  
+            %(id)s,
+            %(cik_str)s,
+            %(ticker)s,
+            %(title)s
+        );
+        """, res)
 
 
 
-def main():
+def seed_database():
     conn = connect_db()
 
-    seed_rss_urls(conn)
-    seed_rss_status(conn)
-    seed_rss_feed(conn)
-    seed_transformed_feed(conn)
+    # seed_rss_urls(conn)
+    # seed_rss_status(conn)
+    # seed_rss_feed(conn)
+    # seed_transformed_feed(conn)
+    # seed_sentiment(conn)
+    seed_tickers(conn)
+
+
+# @dag(
+#     dag_id="seed_database",
+#     schedule=None,
+#     start_date=datetime.now()
+# )
+# def seed_database_dag():
+    
+#     @task
+#     def seed():
+#         seed_database()
+#     seed()
+
+# if __name__ != "__main__":
+#     seed_database_dag()
 
 if __name__ == "__main__":
-    main()
+    seed_database()

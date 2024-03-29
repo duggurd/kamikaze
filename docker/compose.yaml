@@ -1,0 +1,45 @@
+version: "1"
+name: kamikaze
+services:
+  db:
+    build:
+      context: "postgres"
+      dockerfile: "pg.dockerfile"
+    container_name: kamikaze_pg
+    ports:
+      - 5432:5432
+    networks:
+      - kamikaze
+
+  model_api:
+    build:
+      context: "../"
+      dockerfile: "model/model.dockerfile"
+    container_name: kamikaze_model
+    ports:
+      - 8000:8000
+    links:
+      - "db"
+    networks:
+      - kamikaze
+
+  airflow:
+    build:
+      context: "../"
+      dockerfile: "docker/airflow/airflow.dockerfile"
+    container_name: kamikaze_airflow
+    command: standalone
+    ports:
+      - 8080:8080
+    links:
+      - "db"
+      - "model_api"
+    depends_on:
+      - db
+      - model_api
+    networks:
+      - kamikaze
+
+networks:
+  kamikaze:
+    name: kamikaze

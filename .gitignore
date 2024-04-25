@@ -5,3 +5,9 @@
 
 __pycache__
 main.ipynb
+
+model/torchserve/distilroberta_raw
+model/torchserve/model-store
+*.mar
+
+logs

@@ -1,0 +1,1 @@
+torchserve --model-store ./model-store --start --models finroberta=finroberta.mar --ts-config config.properties

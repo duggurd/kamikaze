@@ -3,8 +3,6 @@ import psycopg2
 import os
 from util import connect_db
 import requests
-
-# from airflow.decorators import dag, task
 from datetime import datetime
 
 
@@ -149,6 +147,8 @@ def seed_sentiment(conn):
 
 
 def seed_tickers(conn):
+
+    print("seeding ticker symbols")
     cur = conn.cursor()
     cur.execute("DROP TABLE IF EXISTS tickers;")
     conn.commit()
@@ -184,17 +184,20 @@ def seed_tickers(conn):
             %(title)s
         );
         """, res)
+    conn.commit()
+
+    print("seeded ticker symbols")
 
 
 
 def seed_database():
     conn = connect_db()
 
-    # seed_rss_urls(conn)
-    # seed_rss_status(conn)
-    # seed_rss_feed(conn)
-    # seed_transformed_feed(conn)
-    # seed_sentiment(conn)
+    seed_rss_urls(conn)
+    seed_rss_status(conn)
+    seed_rss_feed(conn)
+    seed_transformed_feed(conn)
+    seed_sentiment(conn)
     seed_tickers(conn)
 
 

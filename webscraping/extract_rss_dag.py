@@ -5,9 +5,7 @@ from util import connect_db
 import re
 from airflow.datasets import Dataset
 import psycopg2
-
-
-    
+  
 def dyanmic_feed_scrape_task(name, dataset):
     @task(task_id=name, outlets=[dataset])
     def scrape(db_conn, rss_url):
@@ -40,6 +38,7 @@ def transform(db_conn):
 
         for row in result_set:
             pattern = re.compile(r"[%\?\.,\-!/&$£@\]\[\(\)=\+:]")
+
             clean_content_title = row[1]
             clean_content_title = re.sub(pattern, "", clean_content_title)
 

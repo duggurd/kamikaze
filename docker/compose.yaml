@@ -11,17 +11,17 @@ services:
     networks:
       - kamikaze
 
-  model_api:
-    build:
-      context: "../"
-      dockerfile: "model/model.dockerfile"
-    container_name: kamikaze_model
-    ports:
-      - 8000:8000
-    links:
-      - "db"
-    networks:
-      - kamikaze
+  # model_api:
+  #   build:
+  #     context: "../"
+  #     dockerfile: "model/model.dockerfile"
+  #   container_name: kamikaze_model
+  #   ports:
+  #     - 8000:8000
+  #   links:
+  #     - "db"
+  #   networks:
+  #     - kamikaze
 
   airflow:
     build:
@@ -33,10 +33,10 @@ services:
       - 8080:8080
     links:
       - "db"
-      - "model_api"
+      # - "model_api"
     depends_on:
       - db
-      - model_api
+      # - model_api
     networks:
       - kamikaze
 

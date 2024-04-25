@@ -1,1 +1,0 @@
-docker build -t kamikaze_model -f ./model.dockerfile .
